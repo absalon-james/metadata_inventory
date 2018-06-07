@@ -74,36 +74,36 @@ def set_meta(nova):
     """
     meta_map = {
         '60282d7e-c9b9-4280-96e3-1dfab7484028': {
-            'stack': 'charles',
-            'group': 'web'
+            'stack_id': 'charles',
+            'ansible_group': 'web'
         },
         '2b2faa9d-f0ad-4be3-9a02-e29dbef8d1e1': {
-             'stack': 'charles',
-             'group': 'db'
+             'stack_id': 'charles',
+             'ansible_group': 'db'
         },
         '02d9994b-c2dc-419d-9816-df15ff76c8fc': {
-            'stack': 'james',
-            'group': 'db'
+            'stack_id': 'james',
+            'ansible_group': 'db'
         },
         '6b9c9a89-21e0-450d-97ce-25297db5084b': {
-            'stack': 'james',
-            'group': 'web'
+            'stack_id': 'james',
+            'ansible_group': 'web'
         },
         '25afb954-2492-42a7-8d46-c64168ce564a': {
-            'stack': 'james',
-            'group': 'service'
+            'stack_id': 'james',
+            'ansible_group': 'service'
         },
         'ca2cd7ff-1042-4573-b79e-0a1d4cc70ac8': {
-            'stack': 'paul',
-            'group': 'service'
+            'stack_id': 'paul',
+            'ansible_group': 'service'
         },
         '8dd09962-d804-466c-b011-d3a6377244bc': {
-            'stack': 'paul',
-            'group': 'service'
+            'stack_id': 'paul',
+            'ansible_group': 'service'
         },
         'c09c97a6-3b07-40ea-a9f5-ec405e3d28d8': {
-            'stack': 'paul',
-            'group': 'service'
+            'stack_id': 'paul',
+            'ansible_group': 'service'
         }
     }
     for server_id, meta_dict in meta_map.items():
@@ -126,7 +126,11 @@ def iter_servers(nova, pagesize):
     marker = None
     while keep_going:
         # Get page of servers
-        servers = nova.servers.list(marker=marker, limit=pagesize)
+        servers = nova.servers.list(
+            marker=marker,
+            limit=pagesize,
+            search_opts={'all_tenants': True}
+        )
 
         # Stop if empty
         if not servers:
@@ -229,8 +233,8 @@ def combined_group_name(stack_value, group_value):
 def cli(list_all, refresh):
 
     # Change these to reflect actual metadata keys.
-    stack_key = 'stack'
-    group_key = 'group'
+    stack_key = 'stack_id'
+    group_key = 'ansible_group'
 
     # Start the inventory
     inventory_dict = {
@@ -254,7 +258,7 @@ def cli(list_all, refresh):
             group = inventory_dict.setdefault(
                 stack_group_name(stack_value),
                 {
-                    'vars': {'stack': stack_value},
+                    'vars': {'stack_id': stack_value},
                     'hosts': []
                 }
             )
@@ -265,7 +269,7 @@ def cli(list_all, refresh):
             group = inventory_dict.setdefault(
                 group_group_name(group_value),
                 {
-                    'vars': {'group': group_value},
+                    'vars': {'ansible_group': group_value},
                     'hosts': []
                 }
             )
